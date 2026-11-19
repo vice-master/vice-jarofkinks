@@ -1,0 +1,735 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fill Your Jars</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: one column of numbered steps, the live picture sticky beside them on wide screens. */
+  :root {
+    --bg: #f6f4f0;
+    --surface: #ffffff;
+    --surface-2: #efebe4;
+    --line: #ded7cc;
+    --fg: #241f29;
+    --muted: #6d6476;
+    --accent: #8e3b6b;
+    --accent-soft: #f3e3ec;
+    --focus: #3b6ba5;
+    --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17141b;
+      --surface: #201c27;
+      --surface-2: #2a2532;
+      --line: #3a3344;
+      --fg: #f0ebf3;
+      --muted: #a79cb0;
+      --accent: #e68bb8;
+      --accent-soft: #3a2232;
+      --focus: #8fb6e8;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17141b;
+    --surface: #201c27;
+    --surface-2: #2a2532;
+    --line: #3a3344;
+    --fg: #f0ebf3;
+    --muted: #a79cb0;
+    --accent: #e68bb8;
+    --accent-soft: #3a2232;
+    --focus: #8fb6e8;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 64px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(2.2rem, 7vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lede { color: var(--muted); max-width: 60ch; margin: 0 0 28px; }
+  .frombadge {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .cols { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+  @media (min-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr) 400px; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .step {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  .hint { color: var(--muted); font-size: 0.9rem; margin: 0 0 14px; }
+
+  label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; }
+  input[type="text"], textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    color: var(--fg);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 12px;
+  }
+  textarea { min-height: 190px; resize: vertical; line-height: 1.5; }
+  textarea.link { min-height: 84px; font-size: 0.8rem; font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; word-break: break-all; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .swatch {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--line); padding: 0; cursor: pointer;
+  }
+  .swatch[aria-pressed="true"] { border-color: var(--fg); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .colorrow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  input[type="color"] { width: 56px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); }
+
+  button.btn {
+    font: inherit; font-weight: 600; cursor: pointer;
+    border-radius: 9px; padding: 10px 16px;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--fg);
+  }
+  button.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.btn:hover { filter: brightness(0.96); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+  .jarcard {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 10px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    min-width: 0;
+  }
+  .jarcard .name {
+    font-size: 0.82rem; font-weight: 500; text-align: center;
+    line-height: 1.25; min-width: 0; overflow-wrap: anywhere;
+  }
+  .levels { display: flex; gap: 3px; }
+  .lv {
+    font: inherit; font-size: 0.78rem; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    width: 26px; height: 26px; padding: 0; cursor: pointer;
+    border-radius: 7px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--muted);
+  }
+  .lv[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .scale { display: flex; justify-content: space-between; width: 100%; font-size: 0.65rem; color: var(--muted); }
+
+  .preview { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+  .preview canvas { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #fff; display: block; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .note { font-size: 0.82rem; color: var(--muted); margin: 10px 0 0; }
+  .warn {
+    font-size: 0.85rem;
+    background: var(--surface-2);
+    border: 1px dashed var(--line);
+    border-radius: 9px;
+    padding: 12px 14px;
+    margin: 14px 0 0;
+    color: var(--muted);
+  }
+  footer { color: var(--muted); font-size: 0.85rem; margin-top: 28px; }
+  footer a, .note a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <p class="frombadge" id="fromBadge" hidden></p>
+  <h1>Fill your <em>jars</em></h1>
+  <p class="lede" id="lede">Rate each one from 1 (a little) to 5 (overflowing). Skip anything that isn't your thing and the jar stays empty. Then save the picture.</p>
+
+  <div class="cols">
+    <div>
+      <section class="card">
+        <p class="step">Step 1</p>
+        <h2>What's your name?</h2>
+        <p class="hint">It goes on the line at the top. A nickname is fine, or leave it blank.</p>
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" placeholder="Your name" autocomplete="off">
+      </section>
+
+      <section class="card">
+        <p class="step">Step 2</p>
+        <h2>Pick your color</h2>
+        <p class="hint">This is what the jars get filled with.</p>
+        <div class="swatches" id="swatches"></div>
+        <div class="colorrow">
+          <input type="color" id="colorInput" value="#e63946" aria-label="Custom fill color">
+          <button class="btn" type="button" id="randomColor">Surprise me</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="step">Step 3</p>
+        <h2>Fill your jars</h2>
+        <p class="hint">Tap a number. Tap the same number again to empty the jar.</p>
+        <div class="grid" id="grid"></div>
+        <div class="actions">
+          <button class="btn" type="button" id="clearAll">Empty every jar</button>
+        </div>
+      </section>
+
+      <section class="card" id="listCard">
+        <p class="step">Step 4</p>
+        <h2>Build your own list</h2>
+        <p class="hint">One item per line. Keep it short — ten to twenty jars reads better than forty. Change the heading too and these jars can be about anything.</p>
+        <label for="titleInput">Heading on the picture</label>
+        <input type="text" id="titleInput" value="Kink Jars" autocomplete="off">
+        <div style="height:14px"></div>
+        <label for="itemsInput">Items <span class="hint" style="display:inline" id="itemCount"></span></label>
+        <textarea id="itemsInput" spellcheck="false"></textarea>
+        <div class="actions">
+          <button class="btn primary" type="button" id="applyItems">Use this list</button>
+          <button class="btn" type="button" id="resetItems">Back to the default list</button>
+        </div>
+      </section>
+
+      <section class="card" id="shareCard">
+        <p class="step">Step 5</p>
+        <h2>Share it, locked</h2>
+        <p class="hint">This makes a link that carries your list inside it. Whoever opens it fills in their own jars and saves their own picture — they can't edit or see your answers, and the list editor isn't there for them.</p>
+        <label for="senderInput">Sign it (optional)</label>
+        <input type="text" id="senderInput" placeholder="Tony" autocomplete="off">
+        <div class="actions">
+          <button class="btn primary" type="button" id="makeLink">Make the share link</button>
+          <button class="btn" type="button" id="copyLink" hidden>Copy it</button>
+        </div>
+        <div id="linkBox" hidden>
+          <div style="height:14px"></div>
+          <label for="linkOut">Your link</label>
+          <textarea class="link" id="linkOut" readonly spellcheck="false"></textarea>
+        </div>
+        <p class="warn" id="hostWarn" hidden></p>
+      </section>
+    </div>
+
+    <aside>
+      <section class="card preview">
+        <p class="step">Your picture</p>
+        <canvas id="out" width="1200" height="900"></canvas>
+        <div class="actions">
+          <button class="btn primary" type="button" id="download">Save the picture</button>
+        </div>
+        <p class="note" id="saveNote">Right-click or long-press the picture to save it too.</p>
+      </section>
+    </aside>
+  </div>
+
+  <footer>
+    <span id="footText">Everything stays in this browser. Nothing is uploaded, and nothing is sent anywhere.</span>
+    <span id="ownSet" hidden> <a href="#" id="ownSetLink">Make your own set →</a></span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DEFAULT_TITLE = "Kink Jars";
+  var DEFAULT_ITEMS = [
+    "being a dom", "being a sub", "being a switch",
+    "bondage / rope", "blindfolds", "gags",
+    "spanking", "being spanked", "biting",
+    "choking", "being choked", "wax play",
+    "edging", "orgasm control", "praise",
+    "degradation", "role play", "public play"
+  ];
+  var PALETTE = [
+    "#e63946", "#f4845f", "#f6bd60", "#8ac926", "#2a9d8f",
+    "#4cc9f0", "#4361ee", "#7209b7", "#b5179e", "#ff8fab",
+    "#6d4c41", "#2b2d42"
+  ];
+
+  var state = {
+    name: "",
+    title: DEFAULT_TITLE,
+    color: "#e63946",
+    items: DEFAULT_ITEMS.slice(),
+    levels: {},
+    from: ""
+  };
+  var locked = false;   // true when the page was opened through a share link
+  var lsKey = "jars:own";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $("grid"), out = $("out");
+
+  /* ---------- share-link encoding ---------- */
+  function encodeSet(cfg) {
+    var bytes = new TextEncoder().encode(JSON.stringify(cfg));
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function decodeSet(str) {
+    try {
+      var b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4) b64 += "=";
+      var bin = atob(b64);
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var cfg = JSON.parse(new TextDecoder().decode(bytes));
+      if (!cfg || !Array.isArray(cfg.i) || !cfg.i.length) return null;
+      return cfg;
+    } catch (e) { return null; }
+  }
+  function readParam() {
+    try {
+      var q = new URLSearchParams(location.search).get("jars");
+      if (q) return q;
+      var h = location.hash || "";
+      if (h.indexOf("jars=") > -1) return h.slice(h.indexOf("jars=") + 5);
+    } catch (e) {}
+    return null;
+  }
+  // A link can only carry the list on a normal web address. Opened from a file,
+  // or inside a sandboxed preview frame, there is nothing stable to link to.
+  function canCarryLinks() {
+    if (location.protocol !== "http:" && location.protocol !== "https:") return false;
+    var h = location.hostname || "";
+    if (/claude\.ai$|claudeusercontent\.com$|\.usercontent\./.test(h)) return false;
+    return true;
+  }
+
+  /* ---------- storage ---------- */
+  function save() {
+    if (locked) return;    // a shared set never overwrites the builder's own
+    try { localStorage.setItem(lsKey, JSON.stringify(state)); } catch (e) {}
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(lsKey);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== "object") return;
+      if (typeof s.name === "string") state.name = s.name;
+      if (typeof s.title === "string") state.title = s.title;
+      if (typeof s.color === "string") state.color = s.color;
+      if (typeof s.from === "string") state.from = s.from;
+      if (Array.isArray(s.items) && s.items.length) state.items = s.items.slice(0, 80);
+      if (s.levels && typeof s.levels === "object") state.levels = s.levels;
+    } catch (e) {}
+  }
+
+  /* ---------- jar drawing ---------- */
+  // Draws one jar into a 100 x 140 box scaled to (w, h) at (x, y).
+  function drawJar(ctx, x, y, w, h, level, color, ink) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(w / 100, h / 140);
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 4;
+
+    function bodyPath() {
+      ctx.beginPath();
+      var l = 13, r = 87, t = 32, b = 134, rad = 12;
+      ctx.moveTo(l + rad, t);
+      ctx.lineTo(r - rad, t);
+      ctx.quadraticCurveTo(r, t, r, t + rad);
+      ctx.lineTo(r, b - rad);
+      ctx.quadraticCurveTo(r, b, r - rad, b);
+      ctx.lineTo(l + rad, b);
+      ctx.quadraticCurveTo(l, b, l, b - rad);
+      ctx.lineTo(l, t + rad);
+      ctx.quadraticCurveTo(l, t, l + rad, t);
+      ctx.closePath();
+    }
+
+    if (level > 0) {
+      ctx.save();
+      bodyPath();
+      ctx.clip();
+      var top = 32, bottom = 134;
+      var fillTop = bottom - (bottom - top) * (level / 5);
+      ctx.fillStyle = color;
+      ctx.fillRect(13, fillTop, 74, bottom - fillTop);
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(13, fillTop, 74, 4);
+      ctx.globalAlpha = 1;
+      if (level >= 5) {
+        ctx.fillStyle = color;
+        ctx.fillRect(13, 26, 74, 10);
+      }
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.rect(24, 8, 52, 12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(29, 20); ctx.lineTo(29, 32);
+    ctx.moveTo(71, 20); ctx.lineTo(71, 32);
+    ctx.stroke();
+    bodyPath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(13, 44); ctx.lineTo(87, 44);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- the exported picture ---------- */
+  function wrapLabel(ctx, text, maxWidth, maxLines) {
+    var words = String(text).split(/\s+/), lines = [], line = "";
+    for (var i = 0; i < words.length; i++) {
+      var test = line ? line + " " + words[i] : words[i];
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = words[i];
+        if (lines.length === maxLines - 1) break;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    return lines.slice(0, maxLines);
+  }
+
+  function columnsFor(n) {
+    if (n <= 6) return 3;
+    if (n <= 12) return 4;
+    if (n <= 25) return 5;
+    return 6;
+  }
+
+  function render() {
+    var items = state.items;
+    var cols = Math.min(columnsFor(items.length), items.length);
+    var pad = 56, cellW = 190, cellH = 250;
+    var W = pad * 2 + cols * cellW;
+    var rows = Math.ceil(items.length / cols);
+    var headerH = 190;
+    var H = headerH + rows * cellH + 56;
+
+    var dpr = 2;
+    out.width = W * dpr;
+    out.height = H * dpr;
+    out.style.aspectRatio = W + " / " + H;
+
+    var ctx = out.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var paper = "#fffdf8", ink = "#1b1620";
+    ctx.fillStyle = paper;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = ink;
+    ctx.font = "600 30px Inter, system-ui, sans-serif";
+    ctx.fillText(state.name.trim(), W / 2, 54);
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 2;
+    var ruleHalf = Math.min(220, W / 2 - 60);
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - ruleHalf, 66);
+    ctx.lineTo(W / 2 + ruleHalf, 66);
+    ctx.stroke();
+
+    ctx.font = "800 58px 'Bricolage Grotesque', Inter, system-ui, sans-serif";
+    ctx.fillText(state.title || DEFAULT_TITLE, W / 2, 130);
+
+    ctx.font = "500 22px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "#5e5566";
+    ctx.fillText("1 = a little   ·   5 = overflowing   ·   empty = not my thing", W / 2, 168);
+
+    for (var i = 0; i < items.length; i++) {
+      var c = i % cols, r = Math.floor(i / cols);
+      var cx = pad + c * cellW + cellW / 2;
+      var cy = headerH + r * cellH;
+      var jw = 112, jh = 157;
+      drawJar(ctx, cx - jw / 2, cy, jw, jh, state.levels[items[i]] || 0, state.color, ink);
+
+      ctx.fillStyle = ink;
+      ctx.font = "500 19px Inter, system-ui, sans-serif";
+      var lines = wrapLabel(ctx, items[i], cellW - 18, 3);
+      for (var j = 0; j < lines.length; j++) {
+        ctx.fillText(lines[j], cx, cy + jh + 30 + j * 23);
+      }
+    }
+  }
+
+  /* ---------- the editing UI ---------- */
+  function buildGrid() {
+    grid.textContent = "";
+    state.items.forEach(function (item, idx) {
+      var card = document.createElement("div");
+      card.className = "jarcard";
+
+      var cv = document.createElement("canvas");
+      cv.width = 120; cv.height = 168;
+      cv.style.width = "60px"; cv.style.height = "84px";
+      cv.setAttribute("aria-hidden", "true");
+      card.appendChild(cv);
+
+      var nameEl = document.createElement("div");
+      nameEl.className = "name";
+      nameEl.textContent = item;
+      card.appendChild(nameEl);
+
+      var levels = document.createElement("div");
+      levels.className = "levels";
+      levels.setAttribute("role", "group");
+      levels.setAttribute("aria-label", item + " — how much");
+      for (var n = 1; n <= 5; n++) {
+        (function (n) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "lv";
+          b.id = "lv-" + idx + "-" + n;
+          b.textContent = String(n);
+          b.setAttribute("aria-pressed", "false");
+          b.addEventListener("click", function () {
+            var cur = state.levels[item] || 0;
+            state.levels[item] = (cur === n) ? 0 : n;
+            paintCard(card, item);
+            render();
+            save();
+          });
+          levels.appendChild(b);
+        })(n);
+      }
+      card.appendChild(levels);
+
+      var scale = document.createElement("div");
+      scale.className = "scale";
+      var a = document.createElement("span"); a.textContent = "a little";
+      var z = document.createElement("span"); z.textContent = "overflowing";
+      scale.appendChild(a); scale.appendChild(z);
+      card.appendChild(scale);
+
+      grid.appendChild(card);
+      paintCard(card, item);
+    });
+    $("itemCount").textContent = "(" + state.items.length + " now)";
+  }
+
+  function paintCard(card, item) {
+    var level = state.levels[item] || 0;
+    var ctx = card.querySelector("canvas").getContext("2d");
+    ctx.clearRect(0, 0, 120, 168);
+    drawJar(ctx, 10, 6, 100, 140, level, state.color, getComputedStyle(document.body).color);
+    var btns = card.querySelectorAll(".lv");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", String(i + 1 === level));
+    }
+  }
+
+  function repaintAllCards() {
+    var cards = grid.children;
+    for (var i = 0; i < cards.length; i++) paintCard(cards[i], state.items[i]);
+  }
+
+  function buildSwatches() {
+    var box = $("swatches");
+    box.textContent = "";
+    PALETTE.forEach(function (hex) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "swatch";
+      b.style.background = hex;
+      b.setAttribute("aria-label", "Fill color " + hex);
+      b.setAttribute("aria-pressed", String(hex.toLowerCase() === state.color.toLowerCase()));
+      b.addEventListener("click", function () { setColor(hex); });
+      box.appendChild(b);
+    });
+  }
+
+  function setColor(hex) {
+    state.color = hex;
+    $("colorInput").value = hex;
+    var sws = $("swatches").children;
+    for (var i = 0; i < sws.length; i++) {
+      sws[i].setAttribute("aria-pressed", String(PALETTE[i].toLowerCase() === hex.toLowerCase()));
+    }
+    repaintAllCards();
+    render();
+    save();
+  }
+
+  /* ---------- events ---------- */
+  $("nameInput").addEventListener("input", function (e) {
+    state.name = e.target.value; render(); save();
+  });
+  $("titleInput").addEventListener("input", function (e) {
+    state.title = e.target.value; render(); save();
+  });
+  $("colorInput").addEventListener("input", function (e) { setColor(e.target.value); });
+  $("randomColor").addEventListener("click", function () {
+    var hex = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    if (hex === state.color) hex = PALETTE[(PALETTE.indexOf(hex) + 1) % PALETTE.length];
+    setColor(hex);
+  });
+  $("clearAll").addEventListener("click", function () {
+    state.levels = {}; repaintAllCards(); render(); save();
+  });
+  $("applyItems").addEventListener("click", function () {
+    var lines = $("itemsInput").value.split("\n")
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length; })
+      .slice(0, 80);
+    if (!lines.length) return;
+    state.items = lines;
+    buildGrid(); render(); save();
+    $("linkBox").hidden = true;
+    $("copyLink").hidden = true;
+  });
+  $("resetItems").addEventListener("click", function () {
+    state.items = DEFAULT_ITEMS.slice();
+    state.title = DEFAULT_TITLE;
+    $("titleInput").value = DEFAULT_TITLE;
+    $("itemsInput").value = state.items.join("\n");
+    buildGrid(); render(); save();
+  });
+  $("senderInput").addEventListener("input", function (e) {
+    state.from = e.target.value; save();
+  });
+
+  $("makeLink").addEventListener("click", function () {
+    var cfg = { t: state.title || DEFAULT_TITLE, i: state.items };
+    if (state.from.trim()) cfg.f = state.from.trim();
+    var base = location.origin + location.pathname;
+    var url = base + "?jars=" + encodeSet(cfg);
+    $("linkOut").value = url;
+    $("linkBox").hidden = false;
+    $("copyLink").hidden = false;
+    if (!canCarryLinks()) {
+      $("hostWarn").hidden = false;
+      $("hostWarn").textContent =
+        "This copy of the page is running somewhere that can't carry a list in its address — a local file, or a preview frame. " +
+        "Put index.html on a real web address (GitHub Pages is free) and the same button gives you a link that works.";
+    }
+  });
+  $("copyLink").addEventListener("click", function () {
+    var el = $("linkOut");
+    el.select();
+    var done = function (ok) { $("copyLink").textContent = ok ? "Copied" : "Select it and copy"; };
+    try {
+      navigator.clipboard.writeText(el.value).then(function () { done(true); }, function () { done(false); });
+    } catch (e) { done(false); }
+  });
+
+  $("download").addEventListener("click", function () {
+    var fname = (state.title || "jars").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png";
+    try {
+      out.toBlob(function (blob) {
+        if (!blob) return;
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        $("saveNote").textContent = "If nothing downloaded, right-click or long-press the picture and save it from there.";
+      }, "image/png");
+    } catch (e) {
+      $("saveNote").textContent = "This view won't let the page download files. Right-click or long-press the picture and save it from there.";
+    }
+  });
+
+  /* ---------- start ---------- */
+  var param = readParam();
+  var shared = param ? decodeSet(param) : null;
+
+  if (shared) {
+    locked = true;
+    state.title = typeof shared.t === "string" ? shared.t : DEFAULT_TITLE;
+    state.items = shared.i.map(String).slice(0, 80);
+    lsKey = "jars:shared:" + encodeSet({ t: state.title, i: state.items }).slice(0, 24);
+    try {
+      var saved = JSON.parse(localStorage.getItem(lsKey) || "null");
+      if (saved) {
+        if (typeof saved.name === "string") state.name = saved.name;
+        if (typeof saved.color === "string") state.color = saved.color;
+        if (saved.levels && typeof saved.levels === "object") state.levels = saved.levels;
+      }
+    } catch (e) {}
+    locked = false;          // answers still save, under the shared set's own key
+    document.title = state.title;
+    $("listCard").hidden = true;
+    $("shareCard").hidden = true;
+    $("lede").textContent =
+      "Somebody sent you this set. Rate each one from 1 (a little) to 5 (overflowing), leave the ones that aren't your thing empty, then save the picture and send it back.";
+    if (typeof shared.f === "string" && shared.f.trim()) {
+      $("fromBadge").textContent = "Sent by " + shared.f.trim();
+      $("fromBadge").hidden = false;
+    }
+    $("ownSetLink").href = location.origin + location.pathname;
+    $("ownSet").hidden = false;
+  } else {
+    load();
+  }
+
+  $("nameInput").value = state.name;
+  $("titleInput").value = state.title;
+  $("colorInput").value = state.color;
+  $("senderInput").value = state.from;
+  $("itemsInput").value = state.items.join("\n");
+  buildSwatches();
+  buildGrid();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { render(); repaintAllCards(); });
+  }
+  render();
+})();
+</script>
+
+</body></html>
