@@ -251,6 +251,7 @@
           <div style="height:14px"></div>
           <label for="linkOut">Your link</label>
           <textarea class="link" id="linkOut" readonly spellcheck="false"></textarea>
+          <p class="note" id="linkLen" hidden></p>
         </div>
         <p class="warn" id="hostWarn" hidden></p>
       </section>
@@ -308,30 +309,60 @@
   var grid = $("grid"), out = $("out");
 
   /* ---------- share-link encoding ---------- */
-  function encodeSet(cfg) {
-    var bytes = new TextEncoder().encode(JSON.stringify(cfg));
+  // The set travels inside the link, so it gets squeezed first: deflate where the
+  // browser has it, then base64url. Prefix "z" = compressed, "j" = plain.
+  function toB64(bytes) {
     var bin = "";
     for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
-  function decodeSet(str) {
-    try {
-      var b64 = str.replace(/-/g, "+").replace(/_/g, "/");
-      while (b64.length % 4) b64 += "=";
-      var bin = atob(b64);
-      var bytes = new Uint8Array(bin.length);
-      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      var cfg = JSON.parse(new TextDecoder().decode(bytes));
-      if (!cfg || !Array.isArray(cfg.i) || !cfg.i.length) return null;
-      return cfg;
-    } catch (e) { return null; }
+  function fromB64(str) {
+    var b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+  function pipe(bytes, mode) {
+    var stream = mode === "deflate"
+      ? new CompressionStream("deflate-raw")
+      : new DecompressionStream("deflate-raw");
+    return new Response(new Blob([bytes]).stream().pipeThrough(stream))
+      .arrayBuffer()
+      .then(function (buf) { return new Uint8Array(buf); });
+  }
+  function packSet(cfg) {
+    var raw = new TextEncoder().encode(JSON.stringify(cfg));
+    if (typeof CompressionStream !== "function") return Promise.resolve("j" + toB64(raw));
+    return pipe(raw, "deflate").then(function (packed) {
+      return packed.length < raw.length ? "z" + toB64(packed) : "j" + toB64(raw);
+    }, function () { return "j" + toB64(raw); });
+  }
+  function unpackSet(str) {
+    return new Promise(function (resolve) {
+      try {
+        var flag = str.charAt(0), body = fromB64(str.slice(1));
+        var step = (flag === "z") ? pipe(body, "inflate") : Promise.resolve(body);
+        step.then(function (bytes) {
+          var cfg = JSON.parse(new TextDecoder().decode(bytes));
+          resolve(cfg && Array.isArray(cfg.i) && cfg.i.length ? cfg : null);
+        }, function () { resolve(null); });
+      } catch (e) { resolve(null); }
+    });
+  }
+  function keyFor(title, items) {
+    var s = title + "\n" + items.join("\n"), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+    return h.toString(36);
   }
   function readParam() {
     try {
-      var q = new URLSearchParams(location.search).get("jars");
+      var p = new URLSearchParams(location.search);
+      var q = p.get("j") || p.get("jars");
       if (q) return q;
       var h = location.hash || "";
-      if (h.indexOf("jars=") > -1) return h.slice(h.indexOf("jars=") + 5);
+      if (h.indexOf("j=") > -1) return h.slice(h.indexOf("j=") + 2);
     } catch (e) {}
     return null;
   }
@@ -644,16 +675,25 @@
     var cfg = { t: state.title || DEFAULT_TITLE, i: state.items };
     if (state.from.trim()) cfg.f = state.from.trim();
     var base = location.origin + location.pathname;
-    var url = base + "?jars=" + encodeSet(cfg);
-    $("linkOut").value = url;
-    $("linkBox").hidden = false;
-    $("copyLink").hidden = false;
-    if (!canCarryLinks()) {
-      $("hostWarn").hidden = false;
-      $("hostWarn").textContent =
-        "This copy of the page is running somewhere that can't carry a list in its address — a local file, or a preview frame. " +
-        "Put index.html on a real web address (GitHub Pages is free) and the same button gives you a link that works.";
-    }
+    $("makeLink").disabled = true;
+    packSet(cfg).then(function (payload) {
+      $("makeLink").disabled = false;
+      var url = base + "?j=" + payload;
+      $("linkOut").value = url;
+      $("linkBox").hidden = false;
+      $("copyLink").hidden = false;
+      $("copyLink").textContent = "Copy it";
+      $("linkLen").textContent =
+        url.length + " characters. Your whole list lives inside the link, so it grows with the number of jars — " +
+        "nothing is stored on a server. Paste it into any free shortener if you want it tidy.";
+      $("linkLen").hidden = false;
+      if (!canCarryLinks()) {
+        $("hostWarn").hidden = false;
+        $("hostWarn").textContent =
+          "This copy of the page is running somewhere that can't carry a list in its address — a local file, or a preview frame. " +
+          "Put index.html on a real web address (GitHub Pages is free) and the same button gives you a link that works.";
+      }
+    });
   });
   $("copyLink").addEventListener("click", function () {
     var el = $("linkOut");
@@ -685,14 +725,10 @@
   });
 
   /* ---------- start ---------- */
-  var param = readParam();
-  var shared = param ? decodeSet(param) : null;
-
-  if (shared) {
-    locked = true;
+  function applyShared(shared) {
     state.title = typeof shared.t === "string" ? shared.t : DEFAULT_TITLE;
     state.items = shared.i.map(String).slice(0, 80);
-    lsKey = "jars:shared:" + encodeSet({ t: state.title, i: state.items }).slice(0, 24);
+    lsKey = "jars:shared:" + keyFor(state.title, state.items);
     try {
       var saved = JSON.parse(localStorage.getItem(lsKey) || "null");
       if (saved) {
@@ -701,7 +737,6 @@
         if (saved.levels && typeof saved.levels === "object") state.levels = saved.levels;
       }
     } catch (e) {}
-    locked = false;          // answers still save, under the shared set's own key
     document.title = state.title;
     $("listCard").hidden = true;
     $("shareCard").hidden = true;
@@ -713,22 +748,33 @@
     }
     $("ownSetLink").href = location.origin + location.pathname;
     $("ownSet").hidden = false;
+  }
+
+  function start() {
+    $("nameInput").value = state.name;
+    $("titleInput").value = state.title;
+    $("colorInput").value = state.color;
+    $("senderInput").value = state.from;
+    $("itemsInput").value = state.items.join("\n");
+    buildSwatches();
+    buildGrid();
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { render(); repaintAllCards(); });
+    }
+    render();
+  }
+
+  var param = readParam();
+  if (param) {
+    unpackSet(param).then(function (shared) {
+      if (shared) applyShared(shared); else load();
+      start();
+    });
   } else {
     load();
+    start();
   }
-
-  $("nameInput").value = state.name;
-  $("titleInput").value = state.title;
-  $("colorInput").value = state.color;
-  $("senderInput").value = state.from;
-  $("itemsInput").value = state.items.join("\n");
-  buildSwatches();
-  buildGrid();
-
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(function () { render(); repaintAllCards(); });
-  }
-  render();
 })();
 </script>
 
